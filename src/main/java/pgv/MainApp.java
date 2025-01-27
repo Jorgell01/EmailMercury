@@ -12,8 +12,8 @@ public class MainApp {
                     "user1@localhost", // Remitente
                     "1234", // Contraseña
                     "user2@localhost", // Destinatario
-                    "Prueba de correo", // Asunto
-                    "Este es un mensaje de prueba enviado desde Java." // Cuerpo
+                    "Muy buenas chavales", // Asunto
+                    "Prueba de correo para ver que se envía en Thunderbird" // Cuerpo
             );
             System.out.println("Correo enviado con éxito.");
 
