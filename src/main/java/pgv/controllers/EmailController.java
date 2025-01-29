@@ -1,55 +1,41 @@
 package pgv.controllers;
 
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
-import pgv.email.EmailReceiver;
-import pgv.email.EmailSender;
-import pgv.model.Email;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
-import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
+public class EmailController {
 
-public class EmailController implements Initializable {
+    private String remitente;
+    private String password;
 
-    @FXML
-    private TableView<Email> emailsTable;
-
-    @FXML
-    private TableColumn<Email, String> remitenteColumn;
-
-    @FXML
-    private TableColumn<Email, String> destinatarioColumn;
-
-    @FXML
-    private TableColumn<Email, String> asuntoColumn;
-
-    @FXML
-    private TableColumn<Email, String> cuerpoColumn;
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        remitenteColumn.setCellValueFactory(new PropertyValueFactory<>("remitente"));
-        destinatarioColumn.setCellValueFactory(new PropertyValueFactory<>("destinatario"));
-        asuntoColumn.setCellValueFactory(new PropertyValueFactory<>("asunto"));
-        cuerpoColumn.setCellValueFactory(new PropertyValueFactory<>("cuerpo"));
+    public void setCredentials(String remitente, String password) {
+        this.remitente = remitente;
+        this.password = password;
     }
 
     @FXML
     private void handleEnviarCorreo() {
         try {
-            EmailSender.enviarCorreo(
-                    1, // ID del usuario
-                    "user1@localhost", // Remitente
-                    "1234", // Contraseña
-                    "user2@localhost", // Destinatario
-                    "Muy buenas chavales", // Asunto
-                    "Prueba de correo para ver que se envía en Thunderbird" // Cuerpo
-            );
-            System.out.println("Correo enviado con éxito.");
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("/fxml/SendEmailDialog.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Enviar Correo");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(null);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            SendEmailController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setCredentials(remitente, password);
+
+            dialogStage.showAndWait();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -58,18 +44,23 @@ public class EmailController implements Initializable {
     @FXML
     private void handleRecibirCorreos() {
         try {
-            List<Email> emails = EmailReceiver.recibirCorreos(
-                    2, // ID del usuario
-                    "user2", // Intentar con user2 o user2@localhost
-                    "abcd" // Contraseña
-            );
-            System.out.println("Correos recibidos con éxito.");
-            emailsTable.getItems().setAll(emails);
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("/fxml/ReceiveEmailDialog.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Recibir Correos");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(null);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            ReceiveEmailController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+
+            dialogStage.showAndWait();
         } catch (Exception e) {
-            System.out.println("Error al recibir correos.");
             e.printStackTrace();
         }
     }
-
-
 }

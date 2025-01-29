@@ -4,15 +4,18 @@ import org.mindrot.jbcrypt.BCrypt;
 
 public class PasswordUtil {
 
-    // Generar un hash de una contraseña
-    public static String hashPassword(String password) {
-        // Gensalt genera un "salt" único para cada contraseña
-        return BCrypt.hashpw(password, BCrypt.gensalt());
+    // Method to hash a password
+    public static String hashPassword(String plainTextPassword) {
+        return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt());
     }
 
-    // Verificar una contraseña contra su hash
-    public static boolean checkPassword(String password, String hashedPassword) {
-        // Compara la contraseña sin hashear con el hash almacenado
-        return BCrypt.checkpw(password, hashedPassword);
+    // Method to check a password against a hashed password
+    public static boolean checkPassword(String plainTextPassword, String hashedPassword) {
+        try {
+            return BCrypt.checkpw(plainTextPassword, hashedPassword);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid salt version: " + e.getMessage());
+            return false;
+        }
     }
 }

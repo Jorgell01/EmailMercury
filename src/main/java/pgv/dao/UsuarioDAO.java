@@ -1,17 +1,20 @@
 package pgv.dao;
 
 import pgv.config.DatabaseConfig;
+import pgv.model.Usuario;
 import pgv.util.PasswordUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UsuarioDAO {
 
     // Registrar un nuevo usuario
     public static int registrarUsuario(String nombre, String correo, String contrasenia) throws Exception {
-        String sql = "INSERT INTO users (nombre, correo, contrasenia, fecha_cambio_contrasenia) VALUES (?, ?, ?, NOW())";
+        String sql = "INSERT INTO users (nombre, correo, password_hash, fecha_cambio_contrasenia) VALUES (?, ?, ?, NOW())";
         try (Connection conn = DatabaseConfig.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 
@@ -34,7 +37,7 @@ public class UsuarioDAO {
 
     // Actualizar la contraseña de un usuario
     public static boolean cambiarContrasenia(int userId, String nuevaContrasenia) throws Exception {
-        String sql = "UPDATE users SET contrasenia = ?, fecha_cambio_contrasenia = NOW() WHERE id = ?";
+        String sql = "UPDATE users SET password_hash = ?, fecha_cambio_contrasenia = NOW() WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement(sql);
 
@@ -63,18 +66,26 @@ public class UsuarioDAO {
     }
 
     // Validar las credenciales del usuario
-    public static boolean validarCredenciales(String correo, String contrasenia) throws Exception {
-        String sql = "SELECT contrasenia FROM users WHERE correo = ?";
+    public static boolean validarCredenciales(String email, String password) throws Exception {
         try (Connection conn = DatabaseConfig.getConnection()) {
+            String sql = "SELECT password_hash FROM users WHERE correo = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, correo);
+            stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
+
             if (rs.next()) {
-                String hashedPassword = rs.getString("contrasenia");
-                return PasswordUtil.checkPassword(contrasenia, hashedPassword);
+                String hashedPassword = rs.getString("password_hash");
+                boolean isPasswordValid = PasswordUtil.checkPassword(password, hashedPassword);
+                System.out.println("Email: " + email);
+                System.out.println("Password: " + password);
+                System.out.println("Hashed Password: " + hashedPassword);
+                System.out.println("Password Valid: " + isPasswordValid);
+                return isPasswordValid;
+            } else {
+                System.out.println("User not found: " + email);
+                return false;
             }
         }
-        return false; // Credenciales inválidas
     }
 
     // Obtener la fecha del último cambio de contraseña

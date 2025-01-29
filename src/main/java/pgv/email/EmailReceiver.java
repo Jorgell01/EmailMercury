@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Properties;
 
 public class EmailReceiver {
-    public static List<Email> recibirCorreos(int userId, String usuario, String password) throws Exception {
+    public static List<Email> recibirCorreos(String usuario, String password) throws Exception {
         List<Email> emails = new ArrayList<>();
 
         // Configuración del servidor POP3
@@ -52,13 +52,12 @@ public class EmailReceiver {
             folder.close(false);
         } catch (AuthenticationFailedException e) {
             System.out.println("Error: Usuario o contraseña incorrectos.");
-            e.printStackTrace();
+            throw e; // Re-lanzar la excepción para que sea manejada en el controlador
         } catch (Exception e) {
             System.out.println("Otro error al recibir correos.");
-            e.printStackTrace();
+            throw e; // Re-lanzar la excepción para que sea manejada en el controlador
         }
 
         return emails;
     }
 }
-
