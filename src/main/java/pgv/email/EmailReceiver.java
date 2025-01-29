@@ -16,38 +16,49 @@ public class EmailReceiver {
         props.put("mail.pop3.host", "localhost");
         props.put("mail.pop3.port", "110");
         props.put("mail.pop3.auth", "true");
+        props.put("mail.debug", "true"); // Activa logs de depuración
+
+        System.out.println("Intentando conectar con el servidor POP3...");
 
         // Crear sesión para POP3
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
+                System.out.println("Autenticando como: " + usuario);
                 return new PasswordAuthentication(usuario, password);
             }
         });
 
         // Conectar al servidor POP3
-        Store store = session.getStore("pop3");
-        store.connect("localhost", usuario, password);
+        try (Store store = session.getStore("pop3")) {
+            store.connect("localhost", usuario, password);
+            System.out.println("Conexión POP3 exitosa.");
 
-        // Abrir la carpeta INBOX
-        Folder folder = store.getFolder("INBOX");
-        folder.open(Folder.READ_ONLY);
+            // Abrir la bandeja de entrada
+            Folder folder = store.getFolder("INBOX");
+            folder.open(Folder.READ_ONLY);
 
-        // Listar los mensajes
-        for (Message mensaje : folder.getMessages()) {
-            String remitente = mensaje.getFrom()[0].toString();
-            String asunto = mensaje.getSubject();
-            String cuerpo = mensaje.getContent().toString();
-            String destinatario = usuario; // El destinatario es el usuario autenticado
+            System.out.println("Correos encontrados: " + folder.getMessageCount());
 
-            // Agregar a la lista de emails
-            emails.add(new Email(remitente, destinatario, asunto, cuerpo));
+            for (Message mensaje : folder.getMessages()) {
+                String remitente = mensaje.getFrom()[0].toString();
+                String asunto = mensaje.getSubject();
+                String cuerpo = mensaje.getContent().toString();
+                String destinatario = usuario;
+
+                emails.add(new Email(remitente, destinatario, asunto, cuerpo));
+            }
+
+            folder.close(false);
+        } catch (AuthenticationFailedException e) {
+            System.out.println("Error: Usuario o contraseña incorrectos.");
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Otro error al recibir correos.");
+            e.printStackTrace();
         }
-
-        // Cerrar la conexión
-        folder.close(false);
-        store.close();
 
         return emails;
     }
 }
+

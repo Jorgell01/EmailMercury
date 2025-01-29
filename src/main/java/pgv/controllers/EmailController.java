@@ -60,16 +60,16 @@ public class EmailController implements Initializable {
         try {
             List<Email> emails = EmailReceiver.recibirCorreos(
                     2, // ID del usuario
-                    "user2", // Usuario
+                    "user2", // Intentar con user2 o user2@localhost
                     "abcd" // Contraseña
             );
             System.out.println("Correos recibidos con éxito.");
-
-            // Actualizar el TableView
             emailsTable.getItems().setAll(emails);
         } catch (Exception e) {
+            System.out.println("Error al recibir correos.");
             e.printStackTrace();
         }
     }
+
 
 }

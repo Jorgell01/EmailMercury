@@ -25,12 +25,14 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Para la conexion a la base de datos -->
     <dependency>
       <groupId>org.mariadb.jdbc</groupId>
       <artifactId>mariadb-java-client</artifactId>
       <version>3.0.3</version>
     </dependency>
 
+    <!-- Para la interfaz grafica -->
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
@@ -43,11 +45,20 @@
       <version>22.0.1</version>
     </dependency>
 
+    <!-- Para enviar correos electronicos -->
     <dependency>
       <groupId>com.sun.mail</groupId>
       <artifactId>javax.mail</artifactId>
       <version>1.6.2</version>
     </dependency>
+
+    <!-- Para encriptar contraseñas -->
+    <dependency>
+      <groupId>org.mindrot</groupId>
+      <artifactId>jbcrypt</artifactId>
+      <version>0.4</version>
+    </dependency>
+
 
   </dependencies>
 </project>
