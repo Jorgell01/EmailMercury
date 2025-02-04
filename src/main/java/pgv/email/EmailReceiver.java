@@ -15,7 +15,7 @@ public class EmailReceiver {
 
     public static List<Email> recibirCorreos(String usuario, String password) throws IOException {
         List<Email> emails = new ArrayList<>();
-        String userDirPath = MAIL_PATH + "\\" + usuario;
+        String userDirPath = MAIL_PATH + "\\" + usuario.split("@")[0]; // Extract username from email
 
         File userDir = new File(userDirPath);
         if (!userDir.exists() || !userDir.isDirectory()) {
@@ -25,19 +25,44 @@ public class EmailReceiver {
         File[] emailFiles = userDir.listFiles((dir, name) -> name.endsWith(".CNM"));
         if (emailFiles != null) {
             for (File emailFile : emailFiles) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(emailFile))) {
-                    String remitente = reader.readLine();
-                    String destinatario = reader.readLine();
-                    String asunto = reader.readLine();
-                    StringBuilder cuerpo = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        cuerpo.append(line).append("\n");
-                    }
-                    emails.add(new Email(remitente, destinatario, asunto, cuerpo.toString()));
+                Email email = readEmailFromFile(emailFile);
+                if (email != null) {
+                    emails.add(email);
                 }
             }
         }
         return emails;
+    }
+
+    private static Email readEmailFromFile(File emailFile) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(emailFile))) {
+            String from = null;
+            String to = null;
+            String subject = null;
+            StringBuilder body = new StringBuilder();
+            String line;
+            boolean isBody = false;
+
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("From: ")) {
+                    from = line.substring(6);
+                } else if (line.startsWith("To: ")) {
+                    to = line.substring(4);
+                } else if (line.startsWith("Subject: ")) {
+                    subject = line.substring(9);
+                } else if (line.isEmpty()) {
+                    isBody = true;
+                } else if (isBody) {
+                    body.append(line).append("\n");
+                }
+            }
+
+            if (from != null && to != null && subject != null) {
+                return new Email(from, to, subject, body.toString().trim());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
