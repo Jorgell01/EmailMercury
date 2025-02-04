@@ -69,9 +69,6 @@ public class ReceiveEmailController {
         try {
             List<Email> emails = EmailReceiver.recibirCorreos(username, password);
             emailsTable.getItems().setAll(emails);
-        } catch (AuthenticationFailedException e) {
-            System.out.println("Error: Invalid username or password.");
-            e.printStackTrace();
         } catch (Exception e) {
             System.out.println("Error receiving emails.");
             e.printStackTrace();

@@ -2,62 +2,42 @@ package pgv.email;
 
 import pgv.model.Email;
 
-import javax.mail.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 public class EmailReceiver {
-    public static List<Email> recibirCorreos(String usuario, String password) throws Exception {
+
+    private static final String MAIL_PATH = "C:\\xampp\\MercuryMail\\MAIL";
+
+    public static List<Email> recibirCorreos(String usuario, String password) throws IOException {
         List<Email> emails = new ArrayList<>();
+        String userDirPath = MAIL_PATH + "\\" + usuario;
 
-        // Configuración del servidor POP3
-        Properties props = new Properties();
-        props.put("mail.pop3.host", "localhost");
-        props.put("mail.pop3.port", "110");
-        props.put("mail.pop3.auth", "true");
-        props.put("mail.debug", "true"); // Activa logs de depuración
-
-        System.out.println("Intentando conectar con el servidor POP3...");
-
-        // Crear sesión para POP3
-        Session session = Session.getInstance(props, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                System.out.println("Autenticando como: " + usuario);
-                return new PasswordAuthentication(usuario, password);
-            }
-        });
-
-        // Conectar al servidor POP3
-        try (Store store = session.getStore("pop3")) {
-            store.connect("localhost", usuario, password);
-            System.out.println("Conexión POP3 exitosa.");
-
-            // Abrir la bandeja de entrada
-            Folder folder = store.getFolder("INBOX");
-            folder.open(Folder.READ_ONLY);
-
-            System.out.println("Correos encontrados: " + folder.getMessageCount());
-
-            for (Message mensaje : folder.getMessages()) {
-                String remitente = mensaje.getFrom()[0].toString();
-                String asunto = mensaje.getSubject();
-                String cuerpo = mensaje.getContent().toString();
-                String destinatario = usuario;
-
-                emails.add(new Email(remitente, destinatario, asunto, cuerpo));
-            }
-
-            folder.close(false);
-        } catch (AuthenticationFailedException e) {
-            System.out.println("Error: Usuario o contraseña incorrectos.");
-            throw e; // Re-lanzar la excepción para que sea manejada en el controlador
-        } catch (Exception e) {
-            System.out.println("Otro error al recibir correos.");
-            throw e; // Re-lanzar la excepción para que sea manejada en el controlador
+        File userDir = new File(userDirPath);
+        if (!userDir.exists() || !userDir.isDirectory()) {
+            throw new IOException("User directory does not exist: " + userDirPath);
         }
 
+        File[] emailFiles = userDir.listFiles((dir, name) -> name.endsWith(".CNM"));
+        if (emailFiles != null) {
+            for (File emailFile : emailFiles) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(emailFile))) {
+                    String remitente = reader.readLine();
+                    String destinatario = reader.readLine();
+                    String asunto = reader.readLine();
+                    StringBuilder cuerpo = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        cuerpo.append(line).append("\n");
+                    }
+                    emails.add(new Email(remitente, destinatario, asunto, cuerpo.toString()));
+                }
+            }
+        }
         return emails;
     }
 }

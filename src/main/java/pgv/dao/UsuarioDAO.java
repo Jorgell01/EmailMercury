@@ -2,8 +2,12 @@ package pgv.dao;
 
 import pgv.config.DatabaseConfig;
 import pgv.model.Usuario;
+import pgv.util.CommandUtil;
 import pgv.util.PasswordUtil;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,12 +17,14 @@ import java.util.List;
 public class UsuarioDAO {
 
     // Registrar un nuevo usuario
+    private static final String MAIL_PATH = "C:\\xampp\\MercuryMail\\MAIL";
+    private static final String USER_FILE_PATH = "C:\\xampp\\MercuryMail\\MAIL\\PMAIL.USR";
+
     public static int registrarUsuario(String nombre, String correo, String contrasenia) throws Exception {
         String sql = "INSERT INTO users (nombre, correo, password_hash, fecha_cambio_contrasenia) VALUES (?, ?, ?, NOW())";
         try (Connection conn = DatabaseConfig.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 
-            // Hashear la contraseña
             String hashedPassword = PasswordUtil.hashPassword(contrasenia);
 
             stmt.setString(1, nombre);
@@ -26,13 +32,48 @@ public class UsuarioDAO {
             stmt.setString(3, hashedPassword);
             stmt.executeUpdate();
 
-            // Obtener el ID del usuario recién creado
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next()) {
-                return rs.getInt(1); // Devuelve el ID del nuevo usuario
+                int userId = rs.getInt(1);
+
+                // Write to the user file
+                writeUserToFile(nombre, nombre);
+
+                // Create user directory and write password
+                createUserDirectoryAndWritePassword(nombre, contrasenia);
+
+                // Restart Mercury service
+                CommandUtil.restartMercuryService();
+
+                return userId;
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("Error registering user: " + e.getMessage());
         }
-        return -1; // Error al registrar el usuario
+        return -1;
+    }
+
+    private static void writeUserToFile(String username, String personalName) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(USER_FILE_PATH, true))) {
+            writer.write("U;" + username + ";(None)");
+            writer.newLine();
+        }
+    }
+
+    private static void createUserDirectoryAndWritePassword(String nombre, String contrasenia) throws IOException {
+        String userDirPath = MAIL_PATH + "\\" + nombre;
+        java.io.File userDir = new java.io.File(userDirPath);
+        if (!userDir.exists()) {
+            userDir.mkdirs();
+        }
+
+        // Write password to PASSWD.PM
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(userDirPath + "\\PASSWD.PM"))) {
+            writer.write("# Mercury/32 User Information File\n");
+            writer.write("POP3_access: " + contrasenia + "\n");
+            writer.write("APOP_secret: \n");
+        }
     }
 
     // Actualizar la contraseña de un usuario

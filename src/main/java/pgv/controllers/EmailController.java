@@ -1,13 +1,40 @@
 package pgv.controllers;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import pgv.email.EmailReceiver;
+import pgv.email.EmailSender;
+import pgv.model.Email;
+
+import javax.mail.AuthenticationFailedException;
+import java.util.List;
 
 public class EmailController {
+
+    @FXML
+    private TextField toField;
+    @FXML
+    private TextField subjectField;
+    @FXML
+    private TextArea bodyField;
+
+    @FXML
+    private TextField usernameField;
+    @FXML
+    private TextField emailField;
+    @FXML
+    private PasswordField passwordField;
+    @FXML
+    private TableView<Email> emailsTable;
+    @FXML
+    private TableColumn<Email, String> remitenteColumn;
+    @FXML
+    private TableColumn<Email, String> destinatarioColumn;
+    @FXML
+    private TableColumn<Email, String> asuntoColumn;
+    @FXML
+    private TableColumn<Email, String> cuerpoColumn;
 
     private String remitente;
     private String password;
@@ -18,49 +45,70 @@ public class EmailController {
     }
 
     @FXML
-    private void handleEnviarCorreo() {
+    private void initialize() {
+        remitenteColumn.setCellValueFactory(new PropertyValueFactory<>("remitente"));
+        destinatarioColumn.setCellValueFactory(new PropertyValueFactory<>("destinatario"));
+        asuntoColumn.setCellValueFactory(new PropertyValueFactory<>("asunto"));
+        cuerpoColumn.setCellValueFactory(new PropertyValueFactory<>("cuerpo"));
+    }
+
+    @FXML
+    private void handleSend() {
+        String destinatario = toField.getText();
+        String asunto = subjectField.getText();
+        String cuerpo = bodyField.getText();
+
+        if (remitente == null || remitente.isEmpty() ||
+                password == null || password.isEmpty() ||
+                destinatario == null || destinatario.isEmpty() ||
+                asunto == null || asunto.isEmpty() ||
+                cuerpo == null || cuerpo.isEmpty()) {
+            System.out.println("Error: Todos los campos deben estar completos.");
+            return;
+        }
+
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getResource("/fxml/SendEmailDialog.fxml"));
-            AnchorPane page = loader.load();
-
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle("Enviar Correo");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(null);
-            Scene scene = new Scene(page);
-            dialogStage.setScene(scene);
-
-            SendEmailController controller = loader.getController();
-            controller.setDialogStage(dialogStage);
-            controller.setCredentials(remitente, password);
-
-            dialogStage.showAndWait();
+            EmailSender.enviarCorreo(remitente, password, destinatario, asunto, cuerpo);
         } catch (Exception e) {
+            System.out.println("Error al enviar el correo.");
             e.printStackTrace();
         }
     }
 
     @FXML
-    private void handleRecibirCorreos() {
+    private void handleLoadEmails() {
+        String username = usernameField.getText();
+        String email = emailField.getText();
+        String password = passwordField.getText();
+
+        if (username == null || username.isEmpty() ||
+                email == null || email.isEmpty() ||
+                password == null || password.isEmpty()) {
+            System.out.println("All fields must be filled.");
+            return;
+        }
+
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getResource("/fxml/ReceiveEmailDialog.fxml"));
-            AnchorPane page = loader.load();
-
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle("Recibir Correos");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(null);
-            Scene scene = new Scene(page);
-            dialogStage.setScene(scene);
-
-            ReceiveEmailController controller = loader.getController();
-            controller.setDialogStage(dialogStage);
-
-            dialogStage.showAndWait();
+            List<Email> emails = EmailReceiver.recibirCorreos(username, password);
+            emailsTable.getItems().setAll(emails);
         } catch (Exception e) {
+            System.out.println("Error receiving emails.");
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void handleClearSendFields() {
+        toField.clear();
+        subjectField.clear();
+        bodyField.clear();
+    }
+
+    @FXML
+    private void handleClearReceiveFields() {
+        usernameField.clear();
+        emailField.clear();
+        passwordField.clear();
+        emailsTable.getItems().clear();
     }
 }

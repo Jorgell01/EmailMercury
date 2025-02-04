@@ -15,7 +15,7 @@ public class LoginController {
     private PasswordField passwordField;
 
     @FXML
-    private TextField nameField; // Add this field if it is used in the FXML
+    private TextField nameField;
 
     private Stage dialogStage;
     private boolean loginSuccessful = false;
@@ -71,5 +71,12 @@ public class LoginController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void handleClearFields() {
+        nameField.clear();
+        emailField.clear();
+        passwordField.clear();
     }
 }
