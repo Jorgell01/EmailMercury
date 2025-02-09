@@ -3,12 +3,15 @@ package pgv.app;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pgv.controllers.LoginController;
 import pgv.controllers.EmailController;
+
+import java.util.Objects;
 
 public class EmailApp extends Application {
 
@@ -17,6 +20,8 @@ public class EmailApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
+        Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/WilfriedSingo.png")));
+        primaryStage.getIcons().add(icon);
         showLoginDialog();
     }
 
@@ -27,6 +32,10 @@ public class EmailApp extends Application {
             GridPane loginLayout = loader.load();
 
             Stage dialogStage = new Stage();
+
+            Image dialogIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/WilfriedSingo.png")));
+            dialogStage.getIcons().add(dialogIcon);
+
             dialogStage.setTitle("Login");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(primaryStage);
@@ -56,6 +65,7 @@ public class EmailApp extends Application {
 
             EmailController controller = loader.getController();
             controller.setCredentials(email, password);
+            controller.setPrimaryStage(primaryStage);
 
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);

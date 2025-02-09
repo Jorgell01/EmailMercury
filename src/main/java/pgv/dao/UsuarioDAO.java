@@ -1,7 +1,6 @@
 package pgv.dao;
 
 import pgv.config.DatabaseConfig;
-import pgv.model.Usuario;
 import pgv.util.CommandUtil;
 import pgv.util.PasswordUtil;
 
@@ -11,15 +10,13 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
 
 public class UsuarioDAO {
 
-    // Registrar un nuevo usuario
     private static final String MAIL_PATH = "C:\\xampp\\MercuryMail\\MAIL";
     private static final String USER_FILE_PATH = "C:\\xampp\\MercuryMail\\MAIL\\PMAIL.USR";
 
+    // Registrar un nuevo usuario
     public static int registrarUsuario(String nombre, String correo, String contrasenia) throws Exception {
         String sql = "INSERT INTO users (nombre, correo, password_hash, fecha_cambio_contrasenia) VALUES (?, ?, ?, NOW())";
         try (Connection conn = DatabaseConfig.getConnection()) {
@@ -82,13 +79,12 @@ public class UsuarioDAO {
         try (Connection conn = DatabaseConfig.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement(sql);
 
-            // Hashear la nueva contraseña
             String hashedPassword = PasswordUtil.hashPassword(nuevaContrasenia);
 
             stmt.setString(1, hashedPassword);
             stmt.setInt(2, userId);
             int filasActualizadas = stmt.executeUpdate();
-            return filasActualizadas > 0; // Devuelve true si la contraseña fue actualizada
+            return filasActualizadas > 0;
         }
     }
 
@@ -103,7 +99,7 @@ public class UsuarioDAO {
                 return rs.getInt("id");
             }
         }
-        return -1; // Usuario no encontrado
+        return -1;
     }
 
     // Validar las credenciales del usuario
@@ -116,14 +112,8 @@ public class UsuarioDAO {
 
             if (rs.next()) {
                 String hashedPassword = rs.getString("password_hash");
-                boolean isPasswordValid = PasswordUtil.checkPassword(password, hashedPassword);
-                System.out.println("Email: " + email);
-                System.out.println("Password: " + password);
-                System.out.println("Hashed Password: " + hashedPassword);
-                System.out.println("Password Valid: " + isPasswordValid);
-                return isPasswordValid;
+                return PasswordUtil.checkPassword(password, hashedPassword);
             } else {
-                System.out.println("User not found: " + email);
                 return false;
             }
         }

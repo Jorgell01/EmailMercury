@@ -5,16 +5,45 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 
-<GridPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pgv.controllers.LoginController" alignment="CENTER" hgap="10" vgap="10" style="-fx-padding: 20;">
-    <Label text="Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-    <TextField fx:id="nameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-    <Label text="Email:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-    <TextField fx:id="emailField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-    <Label text="Password:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-    <PasswordField fx:id="passwordField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-    <Button text="Login" onAction="#handleLogin" GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
-    <Button text="Register" onAction="#handleRegister" GridPane.rowIndex="4" GridPane.columnIndex="1" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
-    <Button text="Clear" onAction="#handleClearFields" GridPane.rowIndex="5" GridPane.columnIndex="1" style="-fx-background-color: #f44336; -fx-text-fill: white;"/>
+<GridPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pgv.controllers.LoginController" alignment="CENTER" styleClass="root-pane" stylesheets="@../css/login.css">
+    <columnConstraints>
+        <ColumnConstraints percentWidth="40"/>
+        <ColumnConstraints percentWidth="60"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints minHeight="30"/>
+        <RowConstraints minHeight="30"/>
+        <RowConstraints minHeight="30"/>
+        <RowConstraints minHeight="50"/>
+        <RowConstraints minHeight="20"/> <!-- Added row for spacing -->
+        <RowConstraints minHeight="50"/>
+    </rowConstraints>
+
+    <Label text="Name:" styleClass="label" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+    <TextField fx:id="nameField" styleClass="text-field" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+    <Label text="Email:" styleClass="label" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+    <TextField fx:id="emailField" styleClass="text-field" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+    <Label text="Password:" styleClass="label" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+    <PasswordField fx:id="passwordField" styleClass="text-field" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+    <HBox spacing="10" alignment="CENTER" GridPane.rowIndex="3" GridPane.columnSpan="2" styleClass="hbox-spacing">
+        <Button text="Login" onAction="#handleLogin" styleClass="button-login" />
+        <Button text="Register" onAction="#handleRegister" styleClass="button-register" />
+    </HBox>
+
+    <HBox spacing="10" alignment="CENTER" GridPane.rowIndex="4" GridPane.columnSpan="2" styleClass="hbox-spacing">
+        <Button text="Clear" onAction="#handleClearFields" styleClass="button-clear" />
+        <Button text="Change Password" onAction="#handleChangePassword" styleClass="button-change" />
+    </HBox>
+
+    <HBox spacing="10" alignment="CENTER" GridPane.rowIndex="5" GridPane.columnSpan="2" styleClass="hbox-spacing">
+        <Button text="Show Password Change Date" onAction="#handleShowPasswordChangeDate" styleClass="button-info" />
+    </HBox>
 </GridPane>

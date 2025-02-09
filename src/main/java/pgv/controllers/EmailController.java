@@ -3,11 +3,12 @@ package pgv.controllers;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import pgv.email.EmailReceiver;
 import pgv.email.EmailSender;
+import pgv.app.EmailApp;
 import pgv.model.Email;
 
-import javax.mail.AuthenticationFailedException;
 import java.util.List;
 
 public class EmailController {
@@ -38,10 +39,15 @@ public class EmailController {
 
     private String remitente;
     private String password;
+    private Stage primaryStage;
 
     public void setCredentials(String remitente, String password) {
         this.remitente = remitente;
         this.password = password;
+    }
+
+    public void setPrimaryStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
     }
 
     @FXML
@@ -63,14 +69,15 @@ public class EmailController {
                 destinatario == null || destinatario.isEmpty() ||
                 asunto == null || asunto.isEmpty() ||
                 cuerpo == null || cuerpo.isEmpty()) {
-            System.out.println("Error: Todos los campos deben estar completos.");
+            showAlert(Alert.AlertType.ERROR, "Error", "Todos los campos deben estar completos.");
             return;
         }
 
         try {
             EmailSender.enviarCorreo(remitente, password, destinatario, asunto, cuerpo);
+            showAlert(Alert.AlertType.INFORMATION, "Éxito", "Correo enviado con éxito.");
         } catch (Exception e) {
-            System.out.println("Error al enviar el correo.");
+            showAlert(Alert.AlertType.ERROR, "Error", "Error al enviar el correo.");
             e.printStackTrace();
         }
     }
@@ -84,15 +91,29 @@ public class EmailController {
         if (username == null || username.isEmpty() ||
                 email == null || email.isEmpty() ||
                 password == null || password.isEmpty()) {
-            System.out.println("All fields must be filled.");
+            showAlert(Alert.AlertType.WARNING, "Advertencia", "Todos los campos deben estar completos.");
             return;
         }
 
         try {
             List<Email> emails = EmailReceiver.recibirCorreos(username, password);
-            emailsTable.getItems().setAll(emails);
+            if (emails.isEmpty()) {
+                showAlert(Alert.AlertType.INFORMATION, "Información", "No hay correos para leer.");
+            } else {
+                emailsTable.getItems().setAll(emails);
+            }
         } catch (Exception e) {
-            System.out.println("Error receiving emails.");
+            showAlert(Alert.AlertType.ERROR, "Error", "Error al recibir los correos.");
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleLogout() {
+        try {
+            EmailApp app = new EmailApp();
+            app.start(primaryStage);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -110,5 +131,13 @@ public class EmailController {
         emailField.clear();
         passwordField.clear();
         emailsTable.getItems().clear();
+    }
+
+    private void showAlert(Alert.AlertType alertType, String title, String message) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

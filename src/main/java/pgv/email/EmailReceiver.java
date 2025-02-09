@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class EmailReceiver {
     }
 
     private static Email readEmailFromFile(File emailFile) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(emailFile))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(emailFile, StandardCharsets.UTF_8))) {
             String from = null;
             String to = null;
             String subject = null;
